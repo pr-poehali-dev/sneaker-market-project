@@ -96,7 +96,6 @@ export default function Index() {
   const { toast } = useToast();
   const [heroLoaded, setHeroLoaded] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'original' | 'replica'>('all');
-  const [testDriveDays, setTestDriveDays] = useState([1]);
   const [compareSlider, setCompareSlider] = useState([50]);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -115,7 +114,6 @@ export default function Index() {
     s => filterType === 'all' || s.type === filterType
   );
 
-  const discount = testDriveDays[0] === 1 ? 15 : 20;
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -190,7 +188,6 @@ export default function Index() {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
             <a href="#catalog" className="hover:text-primary transition-colors">Каталог</a>
-            <a href="#test-drive" className="hover:text-primary transition-colors">Тест-драйв</a>
             <a href="#loyalty" className="hover:text-primary transition-colors">Программа</a>
             <Button 
               size="sm" 
@@ -250,13 +247,6 @@ export default function Index() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Каталог
-              </a>
-              <a 
-                href="#test-drive" 
-                className="block py-2 hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Тест-драйв
               </a>
               <a 
                 href="#loyalty" 
@@ -549,60 +539,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Test Drive */}
-      <section id="test-drive" className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Card className="p-8 lg:p-12 neon-border">
-              <div className="text-center mb-8">
-                <Badge className="mb-4 text-sm px-4 py-2 bg-secondary/20 border-secondary">
-                  <Icon name="Zap" size={14} className="mr-2" />
-                  Уникальное предложение
-                </Badge>
-                <h2 className="text-4xl font-bold mb-4">Тест-драйв реплики</h2>
-                <p className="text-xl text-muted-foreground">
-                  Поносите реплику 1-2 дня, оцените комфорт и обменяйте на оригинал со скидкой!
-                </p>
-              </div>
-              
-              <div className="space-y-8">
-                <div>
-                  <label className="block text-sm font-medium mb-4">
-                    На сколько дней?
-                  </label>
-                  <Slider
-                    value={testDriveDays}
-                    onValueChange={setTestDriveDays}
-                    min={1}
-                    max={2}
-                    step={1}
-                    className="mb-4"
-                  />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>1 день</span>
-                    <span className="font-bold text-foreground">{testDriveDays[0]} {testDriveDays[0] === 1 ? 'день' : 'дня'}</span>
-                    <span>2 дня</span>
-                  </div>
-                </div>
-                
-                <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 text-center">
-                  <div className="text-sm text-muted-foreground mb-2">Ваша скидка на оригинал</div>
-                  <div className="text-6xl font-bold text-primary mb-2">{discount}%</div>
-                  <div className="text-sm text-muted-foreground">
-                    Экономия до {Math.round(45000 * discount / 100).toLocaleString('ru-RU')} ₽
-                  </div>
-                </div>
-                
-                <Button size="lg" className="w-full animate-glow-pulse group">
-                  Забронировать тест-драйв
-                  <Icon name="Calendar" size={20} className="ml-2" />
-                </Button>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* Loyalty Program */}
       <section id="loyalty" className="py-24">
         <div className="container mx-auto px-4">
@@ -699,7 +635,7 @@ export default function Index() {
                 <li>
                   <button 
                     onClick={() => {
-                      document.getElementById('test-drive')?.scrollIntoView({ behavior: 'smooth' });
+                      document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     className="hover:text-primary transition-colors"
                   >
