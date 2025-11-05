@@ -42,7 +42,7 @@ const mockOrder: Order = {
   items: [
     {
       name: 'Air Jordan 1 Retro High',
-      image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=200&q=80',
+      image: '/images/sneaker-1.jpg',
       quantity: 1,
       price: 45000,
     },

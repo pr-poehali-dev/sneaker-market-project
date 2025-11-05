@@ -19,7 +19,7 @@ const sneakers = [
     type: 'original',
     price: 45000,
     similarity: 100,
-    image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&q=80'
+    image: '/images/sneaker-1.jpg'
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ const sneakers = [
     type: 'replica',
     price: 8900,
     similarity: 98,
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80'
+    image: '/images/sneaker-2.jpg'
   },
   {
     id: 3,
@@ -37,7 +37,7 @@ const sneakers = [
     type: 'original',
     price: 52000,
     similarity: 100,
-    image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&q=80'
+    image: '/images/sneaker-3.jpg'
   },
   {
     id: 4,
@@ -46,7 +46,7 @@ const sneakers = [
     type: 'replica',
     price: 9500,
     similarity: 97,
-    image: 'https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=800&q=80'
+    image: '/images/sneaker-4.jpg'
   },
   {
     id: 5,
@@ -55,7 +55,7 @@ const sneakers = [
     type: 'original',
     price: 38000,
     similarity: 100,
-    image: 'https://images.unsplash.com/photo-1539185441755-769473a23570?w=800&q=80'
+    image: '/images/sneaker-5.jpg'
   },
   {
     id: 6,
@@ -64,7 +64,7 @@ const sneakers = [
     type: 'replica',
     price: 7200,
     similarity: 96,
-    image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&q=80'
+    image: '/images/sneaker-6.jpg'
   }
 ];
 
