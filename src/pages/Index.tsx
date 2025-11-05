@@ -7,6 +7,8 @@ import Icon from '@/components/ui/icon';
 import CartDrawer from '@/components/CartDrawer';
 import CheckoutModal, { OrderData } from '@/components/CheckoutModal';
 import OrderTrackingModal from '@/components/OrderTrackingModal';
+import SizeSelector from '@/components/SizeSelector';
+import ScrollToTop from '@/components/ScrollToTop';
 import { useToast } from '@/hooks/use-toast';
 
 const sneakers = [
@@ -99,7 +101,10 @@ export default function Index() {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [trackingOpen, setTrackingOpen] = useState(false);
+  const [sizeSelectorOpen, setSizeSelectorOpen] = useState(false);
+  const [selectedSneaker, setSelectedSneaker] = useState<typeof sneakers[0] | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setHeroLoaded(true), 100);
@@ -114,24 +119,29 @@ export default function Index() {
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  const addToCart = (sneaker: typeof sneakers[0]) => {
-    const existingItem = cartItems.find(item => item.id === sneaker.id);
+  const openSizeSelector = (sneaker: typeof sneakers[0]) => {
+    setSelectedSneaker(sneaker);
+    setSizeSelectorOpen(true);
+  };
+
+  const addToCart = (sneaker: typeof sneakers[0], size: number) => {
+    const existingItem = cartItems.find(item => item.id === sneaker.id && item.size === size);
     if (existingItem) {
       setCartItems(cartItems.map(item => 
-        item.id === sneaker.id 
+        item.id === sneaker.id && item.size === size
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
     } else {
       setCartItems([...cartItems, {
         ...sneaker,
-        size: 42,
+        size,
         quantity: 1
       }]);
     }
     toast({
       title: "Добавлено в корзину",
-      description: sneaker.name,
+      description: `${sneaker.name} (Размер ${size})`,
     });
   };
 
@@ -176,6 +186,8 @@ export default function Index() {
           <div className="text-2xl font-bold tracking-wider">
             SNEAKER<span className="text-primary">LAB</span>
           </div>
+          
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
             <a href="#catalog" className="hover:text-primary transition-colors">Каталог</a>
             <a href="#test-drive" className="hover:text-primary transition-colors">Тест-драйв</a>
@@ -202,7 +214,71 @@ export default function Index() {
               )}
             </Button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-3">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="relative"
+              onClick={() => setCartOpen(true)}
+            >
+              <Icon name="ShoppingCart" size={20} />
+              {cartCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-secondary">
+                  {cartCount}
+                </Badge>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <Icon name={mobileMenuOpen ? "X" : "Menu"} size={24} />
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-background border-t border-border animate-fade-in">
+            <div className="container mx-auto px-4 py-4 space-y-3">
+              <a 
+                href="#catalog" 
+                className="block py-2 hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Каталог
+              </a>
+              <a 
+                href="#test-drive" 
+                className="block py-2 hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Тест-драйв
+              </a>
+              <a 
+                href="#loyalty" 
+                className="block py-2 hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Программа
+              </a>
+              <Button 
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => {
+                  setTrackingOpen(true);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Icon name="Package" size={16} className="mr-2" />
+                Мои заказы
+              </Button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section with Big Visual */}
@@ -218,7 +294,7 @@ export default function Index() {
                 Новый формат покупки кроссовок
               </Badge>
               
-              <h1 className="text-6xl lg:text-7xl font-bold leading-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
                 Оригинал или<br />
                 <span className="text-glow text-primary">реплика?</span><br />
                 Решите сами
@@ -230,11 +306,24 @@ export default function Index() {
               </p>
               
               <div className="flex flex-wrap gap-4 pt-4">
-                <Button size="lg" className="hover-glow group">
+                <Button 
+                  size="lg" 
+                  className="hover-glow group"
+                  onClick={() => {
+                    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   Начать подбор
                   <Icon name="ArrowRight" size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                <Button size="lg" variant="outline" className="neon-border">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="neon-border"
+                  onClick={() => {
+                    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   <Icon name="Play" size={20} className="mr-2" />
                   Как это работает
                 </Button>
@@ -243,7 +332,7 @@ export default function Index() {
 
             {/* Right: Big Sneaker Visual */}
             <div className={`relative ${heroLoaded ? 'animate-scale-in' : 'opacity-0'} delay-300`}>
-              <div className="relative w-full h-[600px]">
+              <div className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px]">
                 {/* Comparison Slider */}
                 <div className="absolute inset-0">
                   <div className="relative h-full rounded-2xl overflow-hidden neon-border">
@@ -296,12 +385,53 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Benefits */}
+      <section className="py-16 border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="flex gap-4 items-start">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon name="Shield" size={24} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Гарантия подлинности</h3>
+                <p className="text-sm text-muted-foreground">
+                  Сертификаты на оригиналы и проверка каждой реплики
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon name="Truck" size={24} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Быстрая доставка</h3>
+                <p className="text-sm text-muted-foreground">
+                  Доставка по всей России за 2-5 дней, бесплатно
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon name="RefreshCw" size={24} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Обмен и возврат</h3>
+                <p className="text-sm text-muted-foreground">
+                  14 дней на обмен, тест-драйв с возможностью апгрейда
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section id="how-it-works" className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-5xl font-bold mb-4">Как это работает</h2>
-            <p className="text-xl text-muted-foreground">Простой путь к вашим кроссовкам</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Как это работает</h2>
+            <p className="text-lg md:text-xl text-muted-foreground">Простой путь к вашим кроссовкам</p>
           </div>
           
           <div className="grid md:grid-cols-4 gap-8">
@@ -327,8 +457,8 @@ export default function Index() {
       <section id="catalog" className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-5xl font-bold mb-4">Каталог</h2>
-            <p className="text-xl text-muted-foreground mb-8">Оригинал и реплика — бок о бок</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Каталог</h2>
+            <p className="text-lg md:text-xl text-muted-foreground mb-8">Оригинал и реплика — бок о бок</p>
             
             {/* Filters */}
             <div className="flex justify-center gap-4 flex-wrap">
@@ -407,7 +537,7 @@ export default function Index() {
                       size="sm" 
                       variant="outline" 
                       className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                      onClick={() => addToCart(sneaker)}
+                      onClick={() => openSizeSelector(sneaker)}
                     >
                       <Icon name="ShoppingBag" size={16} />
                     </Button>
@@ -477,8 +607,8 @@ export default function Index() {
       <section id="loyalty" className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold mb-4">Программа лояльности</h2>
-            <p className="text-xl text-muted-foreground">Растите вместе с нами и получайте больше</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Программа лояльности</h2>
+            <p className="text-lg md:text-xl text-muted-foreground">Растите вместе с нами и получайте больше</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -546,9 +676,36 @@ export default function Index() {
             <div>
               <h4 className="font-semibold mb-4">О компании</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">О нас</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Гарантии</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Доставка</a></li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="hover:text-primary transition-colors"
+                  >
+                    О нас
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      document.getElementById('loyalty')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="hover:text-primary transition-colors"
+                  >
+                    Гарантии
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      document.getElementById('test-drive')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="hover:text-primary transition-colors"
+                  >
+                    Доставка
+                  </button>
+                </li>
               </ul>
             </div>
             
@@ -617,6 +774,19 @@ export default function Index() {
         open={trackingOpen}
         onOpenChange={setTrackingOpen}
       />
+
+      {/* Size Selector */}
+      {selectedSneaker && (
+        <SizeSelector
+          open={sizeSelectorOpen}
+          onOpenChange={setSizeSelectorOpen}
+          sneaker={selectedSneaker}
+          onAddToCart={(size) => addToCart(selectedSneaker, size)}
+        />
+      )}
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 }
