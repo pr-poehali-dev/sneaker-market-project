@@ -4,6 +4,10 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
+import CartDrawer from '@/components/CartDrawer';
+import CheckoutModal, { OrderData } from '@/components/CheckoutModal';
+import OrderTrackingModal from '@/components/OrderTrackingModal';
+import { useToast } from '@/hooks/use-toast';
 
 const sneakers = [
   {
@@ -75,11 +79,27 @@ const howItWorks = [
   { step: 4, title: 'Получение заказа', desc: 'Доставка 2-5 дней', icon: 'Package' }
 ];
 
+interface CartItem {
+  id: number;
+  name: string;
+  brand: string;
+  type: 'original' | 'replica';
+  price: number;
+  image: string;
+  size: number;
+  quantity: number;
+}
+
 export default function Index() {
+  const { toast } = useToast();
   const [heroLoaded, setHeroLoaded] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'original' | 'replica'>('all');
   const [testDriveDays, setTestDriveDays] = useState([1]);
   const [compareSlider, setCompareSlider] = useState([50]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [trackingOpen, setTrackingOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
     const timer = setTimeout(() => setHeroLoaded(true), 100);
@@ -91,6 +111,62 @@ export default function Index() {
   );
 
   const discount = testDriveDays[0] === 1 ? 15 : 20;
+  const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  const addToCart = (sneaker: typeof sneakers[0]) => {
+    const existingItem = cartItems.find(item => item.id === sneaker.id);
+    if (existingItem) {
+      setCartItems(cartItems.map(item => 
+        item.id === sneaker.id 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCartItems([...cartItems, {
+        ...sneaker,
+        size: 42,
+        quantity: 1
+      }]);
+    }
+    toast({
+      title: "Добавлено в корзину",
+      description: sneaker.name,
+    });
+  };
+
+  const updateQuantity = (id: number, quantity: number) => {
+    if (quantity <= 0) {
+      removeItem(id);
+    } else {
+      setCartItems(cartItems.map(item => 
+        item.id === id ? { ...item, quantity } : item
+      ));
+    }
+  };
+
+  const removeItem = (id: number) => {
+    setCartItems(cartItems.filter(item => item.id !== id));
+    toast({
+      title: "Товар удален",
+      description: "Товар удален из корзины",
+    });
+  };
+
+  const handleCheckout = () => {
+    setCartOpen(false);
+    setCheckoutOpen(true);
+  };
+
+  const handleOrderComplete = (orderData: OrderData) => {
+    console.log('Order completed:', orderData);
+    setCheckoutOpen(false);
+    setCartItems([]);
+    toast({
+      title: "Заказ оформлен!",
+      description: `Номер заказа: ORD-2024-${Math.floor(Math.random() * 999999)}. Отслеживайте статус в разделе "Мои заказы"`,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -104,9 +180,26 @@ export default function Index() {
             <a href="#catalog" className="hover:text-primary transition-colors">Каталог</a>
             <a href="#test-drive" className="hover:text-primary transition-colors">Тест-драйв</a>
             <a href="#loyalty" className="hover:text-primary transition-colors">Программа</a>
-            <Button size="sm" className="animate-glow-pulse">
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => setTrackingOpen(true)}
+            >
+              <Icon name="Package" size={16} className="mr-2" />
+              Мои заказы
+            </Button>
+            <Button 
+              size="sm" 
+              className="animate-glow-pulse relative"
+              onClick={() => setCartOpen(true)}
+            >
               <Icon name="ShoppingCart" size={16} className="mr-2" />
               Корзина
+              {cartCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-secondary">
+                  {cartCount}
+                </Badge>
+              )}
             </Button>
           </div>
         </div>
@@ -310,7 +403,12 @@ export default function Index() {
                     <div className="text-2xl font-bold">
                       {sneaker.price.toLocaleString('ru-RU')} ₽
                     </div>
-                    <Button size="sm" variant="outline" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      onClick={() => addToCart(sneaker)}
+                    >
                       <Icon name="ShoppingBag" size={16} />
                     </Button>
                   </div>
@@ -495,6 +593,30 @@ export default function Index() {
           </div>
         </div>
       </footer>
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        open={cartOpen}
+        onOpenChange={setCartOpen}
+        items={cartItems}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeItem}
+        onCheckout={handleCheckout}
+      />
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        total={cartTotal}
+        onComplete={handleOrderComplete}
+      />
+
+      {/* Order Tracking Modal */}
+      <OrderTrackingModal
+        open={trackingOpen}
+        onOpenChange={setTrackingOpen}
+      />
     </div>
   );
 }
